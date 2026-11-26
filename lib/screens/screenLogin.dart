@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:porcilac/theme/themeFondo.dart';
+
 import 'screenHome.dart';
 import 'screenResetPassword.dart';
 
@@ -16,12 +18,67 @@ class _ScreenLoginState extends State<ScreenLogin> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _ocultarPassword = true;
+  bool _cargando = false;
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _iniciarSesion() async {
+    final correo = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
+
+    if (correo.isEmpty || password.isEmpty) {
+      _mostrarMensaje('Ingresa tu correo electrónico y contraseña.');
+      return;
+    }
+
+    setState(() => _cargando = true);
+
+    try {
+      final authResponse = await Supabase.instance.client.auth
+          .signInWithPassword(email: correo, password: password);
+
+      final emailAutenticado = authResponse.user?.email ?? correo;
+
+      final empleado = await Supabase.instance.client
+          .from('empleados')
+          .select()
+          .eq('correo', emailAutenticado)
+          .maybeSingle();
+
+      if (!mounted) return;
+
+      if (empleado == null) {
+        await Supabase.instance.client.auth.signOut();
+        _mostrarMensaje(
+          'Tu usuario existe en autenticación, pero no está registrado en empleados.',
+        );
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ScreenHome()),
+      );
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      _mostrarMensaje(e.message);
+    } catch (_) {
+      if (!mounted) return;
+      _mostrarMensaje('No se pudo conectar con Supabase. Revisa tu conexión.');
+    } finally {
+      if (mounted) {
+        setState(() => _cargando = false);
+      }
+    }
+  }
+
+  void _mostrarMensaje(String texto) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
   }
 
   @override
@@ -70,18 +127,25 @@ class _ScreenLoginState extends State<ScreenLogin> {
                 style: const TextStyle(fontSize: 13.5, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'ejemplo@gmail.com',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
                     borderSide: BorderSide(color: Colors.grey.shade400),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
-                    borderSide:
-                        const BorderSide(color: porcilacPinkButton, width: 1.4),
+                    borderSide: const BorderSide(
+                      color: porcilacPinkButton,
+                      width: 1.4,
+                    ),
                   ),
                 ),
               ),
@@ -104,10 +168,15 @@ class _ScreenLoginState extends State<ScreenLogin> {
                 style: const TextStyle(fontSize: 13.5, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: '••••••••••••••••',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarPassword
@@ -126,8 +195,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
-                    borderSide:
-                        const BorderSide(color: porcilacPinkButton, width: 1.4),
+                    borderSide: const BorderSide(
+                      color: porcilacPinkButton,
+                      width: 1.4,
+                    ),
                   ),
                 ),
               ),
@@ -136,12 +207,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
             SizedBox(
               height: 44,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const ScreenHome()),
-                  );
-                },
+                onPressed: _cargando ? null : _iniciarSesion,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: porcilacPinkButton,
                   foregroundColor: Colors.white,
@@ -150,13 +216,22 @@ class _ScreenLoginState extends State<ScreenLogin> {
                     borderRadius: BorderRadius.circular(5),
                   ),
                 ),
-                child: const Text(
-                  'Iniciar sesión',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                child: _cargando
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Iniciar sesión',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 18),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sidebarx/sidebarx.dart';
+import 'package:porcilac/screens/screenCerdas.dart';
 
 const sidebarPinkColor = Color(0xFFF47FA1);
 const sidebarPinkHoverColor = Color(0xFFEA6B90);
@@ -91,7 +92,10 @@ class _ScreenHomeState extends State<ScreenHome> {
                   child: Center(
                     child: Text(
                       'Admin',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
@@ -117,8 +121,11 @@ class _ScreenHomeState extends State<ScreenHome> {
                         _buildLogoWidget(height: 38),
                         const Row(
                           children: [
-                            Icon(Icons.notifications,
-                                size: 20, color: Colors.black87),
+                            Icon(
+                              Icons.notifications,
+                              size: 20,
+                              color: Colors.black87,
+                            ),
                             SizedBox(width: 16),
                             Icon(Icons.person, size: 20, color: Colors.black87),
                             SizedBox(width: 6),
@@ -151,10 +158,8 @@ class _ScreenHomeState extends State<ScreenHome> {
 }
 
 class ExampleSidebarX extends StatelessWidget {
-  const ExampleSidebarX({
-    super.key,
-    required SidebarXController controller,
-  }) : _controller = controller;
+  const ExampleSidebarX({super.key, required SidebarXController controller})
+    : _controller = controller;
 
   final SidebarXController _controller;
 
@@ -171,9 +176,14 @@ class ExampleSidebarX extends StatelessWidget {
           theme: SidebarXTheme(
             decoration: const BoxDecoration(color: sidebarPinkColor),
             width: 68,
-            itemPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            selectedItemPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            itemPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
+            selectedItemPadding: const EdgeInsets.symmetric(
+              horizontal: 10,
+              vertical: 6,
+            ),
             itemTextPadding: const EdgeInsets.only(left: 12),
             selectedItemTextPadding: const EdgeInsets.only(left: 12),
             hoverColor: sidebarPinkHoverColor,
@@ -206,10 +216,7 @@ class ExampleSidebarX extends StatelessWidget {
                 ),
               ],
             ),
-            iconTheme: const IconThemeData(
-              color: Colors.black87,
-              size: 19,
-            ),
+            iconTheme: const IconThemeData(color: Colors.black87, size: 19),
             selectedIconTheme: const IconThemeData(
               color: Colors.black,
               size: 19,
@@ -224,8 +231,7 @@ class ExampleSidebarX extends StatelessWidget {
               height: 56,
               width: double.infinity,
               color: sidebarPinkColor,
-              alignment:
-                  extended ? Alignment.centerLeft : Alignment.center,
+              alignment: extended ? Alignment.centerLeft : Alignment.center,
               padding: EdgeInsets.symmetric(horizontal: extended ? 14 : 0),
               child: IconButton(
                 padding: EdgeInsets.zero,
@@ -241,10 +247,14 @@ class ExampleSidebarX extends StatelessWidget {
             final footerContent = InkWell(
               onTap: () => debugPrint('Cerrar sesión'),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 16,
+                ),
                 child: Row(
-                  mainAxisAlignment:
-                      isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+                  mainAxisAlignment: isCollapsed
+                      ? MainAxisAlignment.center
+                      : MainAxisAlignment.start,
                   children: [
                     const Icon(Icons.logout, color: Colors.black87, size: 19),
                     if (extended) ...[
@@ -339,12 +349,8 @@ class ExampleSidebarX extends StatelessWidget {
     required bool isCollapsed,
     VoidCallback? onTap,
   }) {
-    final Widget baseIcon = iconWidget ??
-        Icon(
-          icon,
-          size: 19,
-          color: Colors.black87,
-        );
+    final Widget baseIcon =
+        iconWidget ?? Icon(icon, size: 19, color: Colors.black87);
 
     return SidebarXItem(
       label: label,
@@ -355,10 +361,7 @@ class ExampleSidebarX extends StatelessWidget {
     );
   }
 
-  Widget _wrapWithTooltip({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _wrapWithTooltip({required String label, required Widget child}) {
     return Tooltip(
       message: label,
       waitDuration: const Duration(milliseconds: 180),
@@ -370,11 +373,7 @@ class ExampleSidebarX extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: Colors.black26),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 6,
-            offset: Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(2, 2)),
         ],
       ),
       textStyle: const TextStyle(
@@ -388,9 +387,7 @@ class ExampleSidebarX extends StatelessWidget {
 }
 
 class _ScreensExample extends StatefulWidget {
-  const _ScreensExample({
-    required this.controller,
-  });
+  const _ScreensExample({required this.controller});
 
   final SidebarXController controller;
 
@@ -408,6 +405,11 @@ class _ScreensExampleState extends State<_ScreensExample> {
       builder: (context, child) {
         if (widget.controller.selectedIndex == 1) {
           return _buildVistaEmpleados();
+        }
+
+        // NUEVO: muestra la pantalla de Cerdas
+        if (widget.controller.selectedIndex == 2) {
+          return const ScreenCerdas();
         }
 
         final pageTitle = _getTitleByIndex(widget.controller.selectedIndex);
@@ -453,8 +455,10 @@ class _ScreensExampleState extends State<_ScreensExample> {
                   backgroundColor: const Color(0xFFFDEBF1),
                   foregroundColor: const Color(0xFFE91E63),
                   side: const BorderSide(color: Color(0xFFF47FA1)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -471,8 +475,11 @@ class _ScreensExampleState extends State<_ScreensExample> {
                   child: TextField(
                     decoration: InputDecoration(
                       isDense: true,
-                      prefixIcon: const Icon(Icons.search,
-                          size: 18, color: Colors.black87),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        size: 18,
+                        color: Colors.black87,
+                      ),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 8),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(2),
@@ -496,8 +503,11 @@ class _ScreensExampleState extends State<_ScreensExample> {
                     border: Border.all(color: Colors.grey.shade400),
                     borderRadius: BorderRadius.circular(2),
                   ),
-                  child: const Icon(Icons.filter_alt,
-                      size: 18, color: Colors.black87),
+                  child: const Icon(
+                    Icons.filter_alt,
+                    size: 18,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
             ],
@@ -539,24 +549,34 @@ class _ScreensExampleState extends State<_ScreensExample> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.green.shade700,
                               borderRadius: BorderRadius.circular(2),
                             ),
-                            child: const Icon(Icons.edit,
-                                size: 13, color: Colors.white),
+                            child: const Icon(
+                              Icons.edit,
+                              size: 13,
+                              color: Colors.white,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.red.shade700,
                               borderRadius: BorderRadius.circular(2),
                             ),
-                            child: const Icon(Icons.delete,
-                                size: 13, color: Colors.white),
+                            child: const Icon(
+                              Icons.delete,
+                              size: 13,
+                              color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -578,7 +598,9 @@ class _ScreensExampleState extends State<_ScreensExample> {
                     height: 24,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: _paginaActual == i ? sidebarPinkColor : Colors.white,
+                      color: _paginaActual == i
+                          ? sidebarPinkColor
+                          : Colors.white,
                       border: Border.all(
                         color: _paginaActual == i
                             ? sidebarPinkColor
@@ -591,8 +613,9 @@ class _ScreensExampleState extends State<_ScreensExample> {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color:
-                            _paginaActual == i ? Colors.white : Colors.black87,
+                        color: _paginaActual == i
+                            ? Colors.white
+                            : Colors.black87,
                       ),
                     ),
                   ),

@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:porcilac/screens/screenLogin.dart';
 
-void main() {
-  runApp(const MainApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: 'assets/.env');
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL'] ?? '',
+    publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+  );
+
+  runApp(const PorcilacApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class PorcilacApp extends StatelessWidget {
+  const PorcilacApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PORCILAC',
-      home: ScreenLogin(),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: const Color(0xFFEA4C9A),
+      ),
+      home: const ScreenLogin(),
     );
   }
 }
