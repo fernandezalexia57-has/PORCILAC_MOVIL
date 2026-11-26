@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:porcilac/screens/screenHome.dart';
+import 'package:porcilac/screens/screenLogin.dart';
 
 void main() {
   runApp(const MainApp());
@@ -13,7 +13,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PORCILAC',
-      home: ScreenHome(),
+      home: ScreenLogin(),
     );
   }
 }
