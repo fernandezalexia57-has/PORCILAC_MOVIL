@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:porcilac/screens/screenCerdas.dart';
+import 'package:porcilac/screens/screenInicio.dart';
 
 const sidebarPinkColor = Color(0xFFF47FA1);
 const sidebarPinkHoverColor = Color(0xFFEA6B90);
@@ -53,7 +54,7 @@ class ScreenHome extends StatefulWidget {
 }
 
 class _ScreenHomeState extends State<ScreenHome> {
-  final _controller = SidebarXController(selectedIndex: 1, extended: true);
+  final _controller = SidebarXController(selectedIndex: 0, extended: true);
   final _key = GlobalKey<ScaffoldState>();
 
   @override
@@ -403,6 +404,11 @@ class _ScreensExampleState extends State<_ScreensExample> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, child) {
+        // NUEVO: pantalla de Inicio
+        if (widget.controller.selectedIndex == 0) {
+          return const ScreenInicio();
+        }
+
         if (widget.controller.selectedIndex == 1) {
           return _buildVistaEmpleados();
         }
