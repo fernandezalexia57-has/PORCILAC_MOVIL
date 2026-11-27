@@ -3,10 +3,51 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:porcilac/screens/screenCerdas.dart';
 import 'package:porcilac/screens/screenInicio.dart';
+import 'package:porcilac/screens/screenLogin.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 const sidebarPinkColor = Color(0xFFF47FA1);
 const sidebarPinkHoverColor = Color(0xFFEA6B90);
 const creamHeaderColor = Color(0xFFF8F2DD);
+
+// ---------- Cerrar sesión ----------
+Future<void> _cerrarSesion(BuildContext context) async {
+  final confirmar = await showDialog<bool>(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Cerrar sesión'),
+      content: const Text('¿Desea cerrar sesión?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('No'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: const Text(
+            'Sí',
+            style: TextStyle(color: sidebarPinkHoverColor),
+          ),
+        ),
+      ],
+    ),
+  );
+  if (confirmar != true) return;
+
+  try {
+    await Supabase.instance.client.auth.signOut();
+  } catch (e) {
+    debugPrint('Error al cerrar sesión: $e');
+  }
+
+  if (!context.mounted) return;
+
+  // Regresa al login y borra todas las pantallas anteriores
+  Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (_) => const ScreenLogin()),
+    (route) => false,
+  );
+}
 
 String _getTitleByIndex(int index) {
   switch (index) {
@@ -246,7 +287,7 @@ class ExampleSidebarX extends StatelessWidget {
           },
           footerBuilder: (context, extended) {
             final footerContent = InkWell(
-              onTap: () => debugPrint('Cerrar sesión'),
+              onTap: () => _cerrarSesion(context),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
