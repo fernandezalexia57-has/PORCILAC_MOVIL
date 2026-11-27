@@ -62,93 +62,75 @@ class _ScreenHomeState extends State<ScreenHome> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
-
-    return Scaffold(
-      key: _key,
-      backgroundColor: creamHeaderColor,
-      appBar: isSmallScreen
-          ? AppBar(
-              backgroundColor: creamHeaderColor,
-              foregroundColor: Colors.black87,
-              elevation: 0,
-              leading: IconButton(
-                onPressed: () => _key.currentState?.openDrawer(),
-                icon: const Icon(Icons.menu),
-              ),
-              title: Align(
-                alignment: Alignment.centerLeft,
-                child: _buildLogoWidget(height: 32),
-              ),
-              actions: const [
-                Icon(Icons.notifications, size: 20),
-                SizedBox(width: 12),
-                Icon(Icons.person, size: 20),
-                SizedBox(width: 4),
-                Padding(
-                  padding: EdgeInsets.only(right: 12),
-                  child: Center(
-                    child: Text(
-                      'Admin',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          : null,
-      drawer: ExampleSidebarX(controller: _controller),
-      body: Row(
-        children: [
-          if (!isSmallScreen) ExampleSidebarX(controller: _controller),
-          Expanded(
-            child: Column(
-              children: [
-                if (!isSmallScreen)
-                  Container(
-                    height: 56,
-                    color: creamHeaderColor,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Logo fuera del sidebar, en la barra superior
-                        _buildLogoWidget(height: 38),
-                        const Row(
-                          children: [
-                            Icon(Icons.notifications,
-                                size: 20, color: Colors.black87),
-                            SizedBox(width: 16),
-                            Icon(Icons.person, size: 20, color: Colors.black87),
-                            SizedBox(width: 6),
-                            Text(
-                              'Admin',
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontWeight: FontWeight.w500,
-                              ),
+Widget build(BuildContext context) {
+  return Scaffold(
+    key: _key,
+    backgroundColor: creamHeaderColor,
+    body: Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ExampleSidebarX(controller: _controller),
+        Expanded(
+          child: Column(
+            children: [
+              SafeArea(
+                bottom: false,
+                child: Container(
+                  height: 54,
+                  color: creamHeaderColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: _buildLogoWidget(height: 32),
+                      ),
+                      const SizedBox(width: 6),
+                      const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.notifications,
+                            size: 18,
+                            color: Colors.black87,
+                          ),
+                          SizedBox(width: 10),
+                          Icon(
+                            Icons.person,
+                            size: 18,
+                            color: Colors.black87,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            'Admin',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                Expanded(
-                  child: Container(
-                    width: double.infinity,
-                    color: Colors.white,
-                    child: _ScreensExample(controller: _controller),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  color: Colors.white,
+                  child: _ScreensExample(controller: _controller),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
 }
+}
+
 
 class ExampleSidebarX extends StatelessWidget {
   const ExampleSidebarX({
@@ -160,6 +142,11 @@ class ExampleSidebarX extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompact = screenWidth < 600;
+    final expandedWidth = isCompact ? 154.0 : 185.0;
+    final collapsedWidth = isCompact ? 56.0 : 66.0;
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
@@ -167,37 +154,38 @@ class ExampleSidebarX extends StatelessWidget {
 
         return SidebarX(
           controller: _controller,
-          showToggleButton: false, // Quita la flecha de hasta abajo
+          showToggleButton: false,
           theme: SidebarXTheme(
             decoration: const BoxDecoration(color: sidebarPinkColor),
-            width: 68,
-            itemPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            width: collapsedWidth,
+            itemPadding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             selectedItemPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            itemTextPadding: const EdgeInsets.only(left: 12),
-            selectedItemTextPadding: const EdgeInsets.only(left: 12),
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            itemTextPadding: const EdgeInsets.only(left: 10),
+            selectedItemTextPadding: const EdgeInsets.only(left: 10),
             hoverColor: sidebarPinkHoverColor,
-            textStyle: const TextStyle(
+            textStyle: TextStyle(
               color: Colors.black87,
-              fontSize: 13,
+              fontSize: isCompact ? 12.5 : 13,
               fontWeight: FontWeight.w500,
             ),
-            selectedTextStyle: const TextStyle(
+            selectedTextStyle: TextStyle(
               color: Colors.black,
-              fontSize: 13,
+              fontSize: isCompact ? 12.5 : 13,
               fontWeight: FontWeight.bold,
             ),
-            hoverTextStyle: const TextStyle(
+            hoverTextStyle: TextStyle(
               color: Colors.black,
-              fontSize: 13,
+              fontSize: isCompact ? 12.5 : 13,
               fontWeight: FontWeight.w600,
             ),
             itemDecoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(5),
             ),
             selectedItemDecoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(5),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.12),
@@ -208,60 +196,79 @@ class ExampleSidebarX extends StatelessWidget {
             ),
             iconTheme: const IconThemeData(
               color: Colors.black87,
-              size: 19,
+              size: 18,
             ),
             selectedIconTheme: const IconThemeData(
               color: Colors.black,
-              size: 19,
+              size: 18,
             ),
           ),
-          extendedTheme: const SidebarXTheme(
-            width: 185,
-            decoration: BoxDecoration(color: sidebarPinkColor),
+          extendedTheme: SidebarXTheme(
+            width: expandedWidth,
+            decoration: const BoxDecoration(color: sidebarPinkColor),
           ),
           headerBuilder: (context, extended) {
-            return Container(
-              height: 56,
-              width: double.infinity,
-              color: sidebarPinkColor,
-              alignment:
-                  extended ? Alignment.centerLeft : Alignment.center,
-              padding: EdgeInsets.symmetric(horizontal: extended ? 14 : 0),
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.menu, color: Colors.black87, size: 22),
-                onPressed: () {
-                  _controller.setExtended(!_controller.extended);
-                },
+            return SafeArea(
+              bottom: false,
+              child: Container(
+                height: 54,
+                width: double.infinity,
+                color: sidebarPinkColor,
+                alignment:
+                    extended ? Alignment.centerLeft : Alignment.center,
+                padding: EdgeInsets.symmetric(horizontal: extended ? 12 : 0),
+                child: IconButton(
+                  tooltip: extended ? 'Contraer menú' : 'Expandir menú',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(
+                    Icons.menu,
+                    color: Colors.black87,
+                    size: 21,
+                  ),
+                  onPressed: () {
+                    _controller.setExtended(!_controller.extended);
+                  },
+                ),
               ),
             );
           },
           footerBuilder: (context, extended) {
-            final footerContent = InkWell(
-              onTap: () => debugPrint('Cerrar sesión'),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-                child: Row(
-                  mainAxisAlignment:
-                      isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.logout, color: Colors.black87, size: 19),
-                    if (extended) ...[
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          'Cerrar sesión',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+            final footerContent = SafeArea(
+              top: false,
+              child: InkWell(
+                onTap: () => debugPrint('Cerrar sesión'),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: extended ? 12 : 8,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: extended
+                        ? MainAxisAlignment.start
+                        : MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.logout,
+                        color: Colors.black87,
+                        size: 18,
                       ),
+                      if (extended) ...[
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Cerrar sesión',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: isCompact ? 12.5 : 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             );
@@ -289,7 +296,7 @@ class ExampleSidebarX extends StatelessWidget {
               label: 'Cerdas',
               iconWidget: const FaIcon(
                 FontAwesomeIcons.piggyBank,
-                size: 17,
+                size: 16,
                 color: Colors.black87,
               ),
               isCollapsed: isCollapsed,
@@ -298,7 +305,7 @@ class ExampleSidebarX extends StatelessWidget {
               label: 'Reproducción',
               iconWidget: const FaIcon(
                 FontAwesomeIcons.dna,
-                size: 17,
+                size: 16,
                 color: Colors.black87,
               ),
               isCollapsed: isCollapsed,
@@ -312,7 +319,7 @@ class ExampleSidebarX extends StatelessWidget {
               label: 'Destete',
               iconWidget: const FaIcon(
                 FontAwesomeIcons.baby,
-                size: 17,
+                size: 16,
                 color: Colors.black87,
               ),
               isCollapsed: isCollapsed,
@@ -321,7 +328,7 @@ class ExampleSidebarX extends StatelessWidget {
               label: 'Reportes',
               iconWidget: const FaIcon(
                 FontAwesomeIcons.fileLines,
-                size: 17,
+                size: 16,
                 color: Colors.black87,
               ),
               isCollapsed: isCollapsed,
@@ -342,7 +349,7 @@ class ExampleSidebarX extends StatelessWidget {
     final Widget baseIcon = iconWidget ??
         Icon(
           icon,
-          size: 19,
+          size: 18,
           color: Colors.black87,
         );
 
@@ -364,7 +371,7 @@ class ExampleSidebarX extends StatelessWidget {
       waitDuration: const Duration(milliseconds: 180),
       preferBelow: false,
       verticalOffset: 0,
-      margin: const EdgeInsets.only(left: 58),
+      margin: const EdgeInsets.only(left: 52),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(4),
