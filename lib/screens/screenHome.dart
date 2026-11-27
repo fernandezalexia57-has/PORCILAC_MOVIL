@@ -1,11 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:sidebarx/sidebarx.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:porcilac/screens/screenCerdas.dart';
+import 'package:porcilac/screens/screenInicio.dart';
+import 'package:porcilac/screens/screenLogin.dart';
+import 'package:porcilac/screens/screenPartos.dart';
+import 'package:porcilac/screens/screenReproduccion.dart';
+import 'package:porcilac/screens/screenDestete.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+>>>>>>> Stashed changes
+
+import 'package:porcilac/screens/screencampanaNotificaciones.dart';
 
 const sidebarPinkColor = Color(0xFFF47FA1);
 const sidebarPinkHoverColor = Color(0xFFEA6B90);
 const creamHeaderColor = Color(0xFFF8F2DD);
 
+<<<<<<< Updated upstream
+=======
+// ---------- Cerrar sesión ----------
+Future<void> _cerrarSesion(BuildContext context) async {
+  final confirmar = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: const Text('Cerrar sesión'),
+      content: const Text('¿Desea cerrar sesión?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, false),
+          child: const Text('No'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(dialogContext, true),
+          child: const Text(
+            'Sí',
+            style: TextStyle(color: sidebarPinkHoverColor),
+          ),
+        ),
+      ],
+    ),
+  );
+  if (confirmar != true) return;
+
+  try {
+    await Supabase.instance.client.auth.signOut();
+  } catch (e) {
+    debugPrint('Error al cerrar sesión: $e');
+  }
+
+  if (!context.mounted) return;
+
+  // Regresa al login y borra todas las pantallas anteriores
+  Navigator.of(context).pushAndRemoveUntil(
+    MaterialPageRoute(builder: (_) => const ScreenLogin()),
+    (route) => false,
+  );
+}
+
+>>>>>>> Stashed changes
 String _getTitleByIndex(int index) {
   switch (index) {
     case 0:
@@ -52,7 +106,11 @@ class ScreenHome extends StatefulWidget {
 }
 
 class _ScreenHomeState extends State<ScreenHome> {
+<<<<<<< Updated upstream
   final _controller = SidebarXController(selectedIndex: 1, extended: true);
+=======
+  final _controller = SidebarXController(selectedIndex: 0, extended: false);
+>>>>>>> Stashed changes
   final _key = GlobalKey<ScaffoldState>();
 
   @override
@@ -62,6 +120,7 @@ class _ScreenHomeState extends State<ScreenHome> {
   }
 
   @override
+<<<<<<< Updated upstream
 Widget build(BuildContext context) {
   return Scaffold(
     key: _key,
@@ -105,9 +164,50 @@ Widget build(BuildContext context) {
                             'Admin',
                             style: TextStyle(
                               fontSize: 12.5,
+=======
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompact = screenWidth < 720;
+
+    return Scaffold(
+      key: _key,
+      backgroundColor: creamHeaderColor,
+      body: SafeArea(
+        bottom: false,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ExampleSidebarX(controller: _controller),
+            Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    height: isCompact ? 50 : 56,
+                    color: creamHeaderColor,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isCompact ? 6 : 20,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Logo fuera del sidebar, en la barra superior
+                        Flexible(
+                          child: _buildLogoWidget(height: isCompact ? 26 : 38),
+                        ),
+                        const SizedBox(width: 4),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CampanaNotificaciones(),
+                            SizedBox(width: isCompact ? 6 : 16),
+                            Icon(
+                              Icons.person,
+                              size: isCompact ? 17 : 20,
+>>>>>>> Stashed changes
                               color: Colors.black87,
                               fontWeight: FontWeight.w500,
                             ),
+<<<<<<< Updated upstream
                           ),
                         ],
                       ),
@@ -129,6 +229,37 @@ Widget build(BuildContext context) {
     ),
   );
 }
+=======
+                            const SizedBox(width: 4),
+                            Text(
+                              'Admin',
+                              style: TextStyle(
+                                fontSize: isCompact ? 12 : 14,
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      color: Colors.white,
+                      child: _ScreensExample(controller: _controller),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+>>>>>>> Stashed changes
 }
 
 
@@ -157,27 +288,51 @@ class ExampleSidebarX extends StatelessWidget {
           showToggleButton: false,
           theme: SidebarXTheme(
             decoration: const BoxDecoration(color: sidebarPinkColor),
+<<<<<<< Updated upstream
             width: collapsedWidth,
             itemPadding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             selectedItemPadding:
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+=======
+            width: 52,
+            itemPadding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 6,
+            ),
+            selectedItemPadding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 6,
+            ),
+>>>>>>> Stashed changes
             itemTextPadding: const EdgeInsets.only(left: 10),
             selectedItemTextPadding: const EdgeInsets.only(left: 10),
             hoverColor: sidebarPinkHoverColor,
             textStyle: TextStyle(
               color: Colors.black87,
+<<<<<<< Updated upstream
               fontSize: isCompact ? 12.5 : 13,
+=======
+              fontSize: 12,
+>>>>>>> Stashed changes
               fontWeight: FontWeight.w500,
             ),
             selectedTextStyle: TextStyle(
               color: Colors.black,
+<<<<<<< Updated upstream
               fontSize: isCompact ? 12.5 : 13,
+=======
+              fontSize: 12,
+>>>>>>> Stashed changes
               fontWeight: FontWeight.bold,
             ),
             hoverTextStyle: TextStyle(
               color: Colors.black,
+<<<<<<< Updated upstream
               fontSize: isCompact ? 12.5 : 13,
+=======
+              fontSize: 12,
+>>>>>>> Stashed changes
               fontWeight: FontWeight.w600,
             ),
             itemDecoration: BoxDecoration(
@@ -188,21 +343,26 @@ class ExampleSidebarX extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
+<<<<<<< Updated upstream
             iconTheme: const IconThemeData(
               color: Colors.black87,
               size: 18,
             ),
+=======
+            iconTheme: const IconThemeData(color: Colors.black87, size: 18),
+>>>>>>> Stashed changes
             selectedIconTheme: const IconThemeData(
               color: Colors.black,
               size: 18,
             ),
           ),
+<<<<<<< Updated upstream
           extendedTheme: SidebarXTheme(
             width: expandedWidth,
             decoration: const BoxDecoration(color: sidebarPinkColor),
@@ -226,6 +386,26 @@ class ExampleSidebarX extends StatelessWidget {
                     color: Colors.black87,
                     size: 21,
                   ),
+=======
+          extendedTheme: const SidebarXTheme(
+            width: 150,
+            decoration: BoxDecoration(color: sidebarPinkColor),
+          ),
+          headerBuilder: (context, extended) {
+            return Container(
+              height: 52,
+              width: double.infinity,
+              color: sidebarPinkColor,
+              alignment: extended ? Alignment.centerLeft : Alignment.center,
+              padding: EdgeInsets.symmetric(horizontal: extended ? 10 : 0),
+              child: _wrapWithTooltip(
+                label: extended ? 'Contraer menú' : 'Expandir menú',
+                enabled: true,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.menu, color: Colors.black87, size: 20),
+>>>>>>> Stashed changes
                   onPressed: () {
                     _controller.setExtended(!_controller.extended);
                   },
@@ -234,6 +414,7 @@ class ExampleSidebarX extends StatelessWidget {
             );
           },
           footerBuilder: (context, extended) {
+<<<<<<< Updated upstream
             final footerContent = SafeArea(
               top: false,
               child: InkWell(
@@ -252,6 +433,33 @@ class ExampleSidebarX extends StatelessWidget {
                         Icons.logout,
                         color: Colors.black87,
                         size: 18,
+=======
+            final footerContent = InkWell(
+              onTap: () => _cerrarSesion(context),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: extended ? 10 : 4,
+                  vertical: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: isCollapsed
+                      ? MainAxisAlignment.center
+                      : MainAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.logout, color: Colors.black87, size: 18),
+                    if (extended) ...[
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Text(
+                          'Cerrar sesión',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+>>>>>>> Stashed changes
                       ),
                       if (extended) ...[
                         const SizedBox(width: 10),
@@ -273,10 +481,9 @@ class ExampleSidebarX extends StatelessWidget {
               ),
             );
 
-            if (!isCollapsed) return footerContent;
-
             return _wrapWithTooltip(
               label: 'Cerrar sesión',
+              enabled: isCollapsed,
               child: footerContent,
             );
           },
@@ -286,11 +493,6 @@ class ExampleSidebarX extends StatelessWidget {
               icon: Icons.home_outlined,
               isCollapsed: isCollapsed,
               onTap: () => debugPrint('Inicio'),
-            ),
-            _buildSidebarItem(
-              label: 'Empleados',
-              icon: Icons.people,
-              isCollapsed: isCollapsed,
             ),
             _buildSidebarItem(
               label: 'Cerdas',
@@ -346,32 +548,57 @@ class ExampleSidebarX extends StatelessWidget {
     required bool isCollapsed,
     VoidCallback? onTap,
   }) {
+<<<<<<< Updated upstream
     final Widget baseIcon = iconWidget ??
         Icon(
           icon,
           size: 18,
           color: Colors.black87,
         );
+=======
+    final Widget baseIcon =
+        iconWidget ?? Icon(icon, size: 18, color: Colors.black87);
+>>>>>>> Stashed changes
 
     return SidebarXItem(
       label: label,
       onTap: onTap,
-      iconWidget: isCollapsed
-          ? _wrapWithTooltip(label: label, child: baseIcon)
-          : baseIcon,
+      iconWidget: _wrapWithTooltip(
+        label: label,
+        enabled: isCollapsed,
+        child: SizedBox(
+          width: 28,
+          height: 26,
+          child: Center(child: baseIcon),
+        ),
+      ),
     );
   }
 
   Widget _wrapWithTooltip({
     required String label,
+<<<<<<< Updated upstream
     required Widget child,
   }) {
+=======
+    required bool enabled,
+    required Widget child,
+  }) {
+    if (!enabled) return child;
+
+>>>>>>> Stashed changes
     return Tooltip(
       message: label,
-      waitDuration: const Duration(milliseconds: 180),
+      triggerMode: TooltipTriggerMode.longPress,
+      waitDuration: const Duration(milliseconds: 120),
+      showDuration: const Duration(seconds: 2),
       preferBelow: false,
       verticalOffset: 0,
+<<<<<<< Updated upstream
       margin: const EdgeInsets.only(left: 52),
+=======
+      margin: const EdgeInsets.only(left: 56),
+>>>>>>> Stashed changes
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(4),
@@ -413,10 +640,35 @@ class _ScreensExampleState extends State<_ScreensExample> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, child) {
-        if (widget.controller.selectedIndex == 1) {
-          return _buildVistaEmpleados();
+<<<<<<< Updated upstream
+=======
+        // Pantalla de Inicio
+        if (widget.controller.selectedIndex == 0) {
+          return const ScreenInicio();
         }
 
+        // Pantalla de Cerdas
+>>>>>>> Stashed changes
+        if (widget.controller.selectedIndex == 1) {
+          return const ScreenCerdas();
+        }
+
+<<<<<<< Updated upstream
+=======
+        // NUEVO: Pantalla de Partos
+        if (widget.controller.selectedIndex == 2) {
+          return const ScreenReproduccion();
+        }
+
+        if (widget.controller.selectedIndex == 3) {
+          return const ScreenPartos();
+        }
+
+        if (widget.controller.selectedIndex == 4) {
+          return const ScreenDestete();
+        }
+
+>>>>>>> Stashed changes
         final pageTitle = _getTitleByIndex(widget.controller.selectedIndex);
         return Center(
           child: Text(
