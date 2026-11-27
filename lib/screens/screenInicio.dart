@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -44,6 +45,7 @@ const _mesesCortos = [
 
 String _fecha(DateTime d) => '${d.day} ${_mesesCortos[d.month - 1]} ${d.year}';
 String _cerdasTexto(int n) => '$n ${n == 1 ? 'cerda' : 'cerdas'}';
+int _n(dynamic v) => (v as num?)?.toInt() ?? 0;
 
 class ScreenInicio extends StatefulWidget {
   const ScreenInicio({super.key});
@@ -56,6 +58,7 @@ class _ScreenInicioState extends State<ScreenInicio> {
   final _db = Supabase.instance.client;
 
   bool _cargando = true;
+  bool _cargado = false;
   String? _error;
 
   int _totalCerdas = 0;
@@ -66,8 +69,17 @@ class _ScreenInicioState extends State<ScreenInicio> {
   int _muertos = 0;
   Map<DateTime, List<String>> _partosPorDia = {};
 
+  // Datos completos para los diálogos (se actualizan solos)
+  final _cerdasN = ValueNotifier<List<Map<String, dynamic>>>([]);
+  final _partosN = ValueNotifier<List<Map<String, dynamic>>>([]);
+
   late DateTime _mesVisible;
   DateTime? _diaSeleccionado;
+
+  // Actualización automática
+  RealtimeChannel? _canal;
+  Timer? _debounce;
+  Timer? _respaldo;
 
   @override
   void initState() {
@@ -75,16 +87,47 @@ class _ScreenInicioState extends State<ScreenInicio> {
     final hoy = DateTime.now();
     _mesVisible = DateTime(hoy.year, hoy.month, 1);
     _cargar();
+    _suscribirCambios();
+    // Respaldo: recarga cada 30 s por si Realtime no está activo
+    _respaldo = Timer.periodic(const Duration(seconds: 30), (_) => _cargar());
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _respaldo?.cancel();
+    if (_canal != null) _db.removeChannel(_canal!);
+    _cerdasN.dispose();
+    _partosN.dispose();
+    super.dispose();
+  }
+
+  // ---------- Realtime: cualquier cambio en estas tablas recarga todo ----------
+  void _suscribirCambios() {
+    final canal = _db.channel('inicio-cambios');
+    for (final tabla in ['cerdas', 'partos', 'destetes', 'reproducciones']) {
+      canal.onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: tabla,
+        callback: (_) => _programarRecarga(),
+      );
+    }
+    canal.subscribe();
+    _canal = canal;
+  }
+
+  void _programarRecarga() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), _cargar);
   }
 
   // ---------- Leer todo de Supabase y calcular ----------
   Future<void> _cargar() async {
     try {
       final r = await Future.wait([
-        _db.from('cerdas').select('id, estado_reproductivo').eq('activa', true),
-        _db
-            .from('partos')
-            .select('cerda_id, fecha_parto, lechones_vivos, lechones_muertos'),
+        _db.from('cerdas').select().eq('activa', true).order('numero'),
+        _db.from('partos').select().order('id', ascending: false),
         _db.from('destetes').select('fecha_destete, num_lechones'),
         _db
             .from('reproducciones')
@@ -110,8 +153,8 @@ class _ScreenInicioState extends State<ScreenInicio> {
       final partosDeCerda = <String, List<DateTime>>{};
       for (final p in partos) {
         final f = DateTime.parse(p['fecha_parto'] as String);
-        final vivos = (p['lechones_vivos'] as num).toInt();
-        final muertos = (p['lechones_muertos'] as num).toInt();
+        final vivos = _n(p['lechones_vivos']);
+        final muertos = _n(p['lechones_muertos']);
         vivosTotal += vivos;
         if (esMesActual(f)) {
           vivosMes += vivos;
@@ -124,7 +167,7 @@ class _ScreenInicioState extends State<ScreenInicio> {
       int destetadosTotal = 0, destetadosMes = 0;
       for (final d in destetes) {
         final f = DateTime.parse(d['fecha_destete'] as String);
-        final n = (d['num_lechones'] as num).toInt();
+        final n = _n(d['num_lechones']);
         destetadosTotal += n;
         if (esMesActual(f)) destetadosMes += n;
       }
@@ -150,6 +193,8 @@ class _ScreenInicioState extends State<ScreenInicio> {
       }
 
       if (!mounted) return;
+      _cerdasN.value = cerdas;
+      _partosN.value = partos;
       setState(() {
         _totalCerdas = cerdas.length;
         _preniadas = preniadas;
@@ -159,10 +204,16 @@ class _ScreenInicioState extends State<ScreenInicio> {
         _destetados = destetadosMes;
         _partosPorDia = mapa;
         _cargando = false;
+        _cargado = true;
         _error = null;
       });
     } catch (e) {
       if (!mounted) return;
+      // Si ya había datos, una recarga fallida no debe borrar la pantalla
+      if (_cargado) {
+        debugPrint('Error al actualizar inicio: $e');
+        return;
+      }
       setState(() {
         _cargando = false;
         _error = 'No se pudo cargar el inicio.\n$e';
@@ -215,6 +266,7 @@ class _ScreenInicioState extends State<ScreenInicio> {
                       titulo: 'Cerdas totales',
                       valor: _totalCerdas,
                       color: _rosa,
+                      onTap: _abrirTotales,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -223,6 +275,7 @@ class _ScreenInicioState extends State<ScreenInicio> {
                       titulo: 'Lechones',
                       valor: _lechones,
                       color: _azul,
+                      onTap: _abrirLechones,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -231,6 +284,7 @@ class _ScreenInicioState extends State<ScreenInicio> {
                       titulo: 'Cerdas preñadas',
                       valor: _preniadas,
                       color: _verde,
+                      onTap: _abrirPreniadas,
                     ),
                   ),
                 ],
@@ -303,6 +357,270 @@ class _ScreenInicioState extends State<ScreenInicio> {
               contenido,
           ],
         ),
+      ),
+    );
+  }
+
+  // =====================================================================
+  // DIÁLOGOS DE DETALLE (se actualizan solos aunque estén abiertos)
+  // =====================================================================
+  Future<void> _dialogo(String titulo, Widget contenido) {
+    return showDialog(
+      context: context,
+      builder: (ctx) {
+        final ancho = math.max(
+          280.0,
+          math.min(620.0, MediaQuery.of(ctx).size.width - 120),
+        );
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            titulo,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          content: SizedBox(width: ancho, height: 420, child: contenido),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cerrar', style: TextStyle(color: _azul)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _fila(List<String> celdas, {bool encabezado = false}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        children: celdas
+            .map(
+              (t) => Expanded(
+                child: Text(
+                  t,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: encabezado
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  // ---------- 1) Cerdas totales: listado general ----------
+  void _abrirTotales() {
+    _dialogo(
+      'Listado General de Cerdas Totales',
+      ValueListenableBuilder<List<Map<String, dynamic>>>(
+        valueListenable: _cerdasN,
+        builder: (_, cerdas, __) {
+          if (cerdas.isEmpty) {
+            return const Center(child: Text('No hay cerdas registradas'));
+          }
+          return Column(
+            children: [
+              _fila([
+                'ID',
+                'Arete',
+                'Raza',
+                'Color',
+                'Edad',
+                'Estado',
+              ], encabezado: true),
+              Expanded(
+                child: ListView(
+                  children: cerdas
+                      .map(
+                        (c) => _fila([
+                          '${c['numero']}',
+                          '${c['numero_arete']}',
+                          '${c['raza']}',
+                          '${c['color']}',
+                          '${c['edad_anios']}',
+                          '${c['estado_reproductivo']}',
+                        ]),
+                      )
+                      .toList(),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ---------- 2) Lechones: nacidos vivos y muertos ----------
+  void _abrirLechones() {
+    _dialogo(
+      'Lechones',
+      ValueListenableBuilder<List<Map<String, dynamic>>>(
+        valueListenable: _partosN,
+        builder: (_, partos, __) {
+          final vivos = partos.fold<int>(
+            0,
+            (s, p) => s + _n(p['lechones_vivos']),
+          );
+          final muertos = partos.fold<int>(
+            0,
+            (s, p) => s + _n(p['lechones_muertos']),
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(child: _resumenBox('Nacidos vivos', vivos, _verde)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _resumenBox('Muertos', muertos, _rosa)),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Detalle por parto',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _fila(['Arete', 'Fecha', 'Vivos', 'Muertos'], encabezado: true),
+              Expanded(
+                child: partos.isEmpty
+                    ? const Center(child: Text('No hay partos registrados'))
+                    : ListView(
+                        children: partos
+                            .map(
+                              (p) => _fila([
+                                '${p['numero_arete']}',
+                                '${p['fecha_parto']}',
+                                '${_n(p['lechones_vivos'])}',
+                                '${_n(p['lechones_muertos'])}',
+                              ]),
+                            )
+                            .toList(),
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _resumenBox(String etiqueta, int valor, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        children: [
+          Text(etiqueta, style: TextStyle(color: color)),
+          const SizedBox(height: 4),
+          Text(
+            '$valor',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------- 3) Cerdas preñadas agrupadas por raza ----------
+  void _abrirPreniadas() {
+    _dialogo(
+      'Cerdas Agrupadas por Raza',
+      ValueListenableBuilder<List<Map<String, dynamic>>>(
+        valueListenable: _cerdasN,
+        builder: (_, cerdas, __) {
+          final gestantes = cerdas
+              .where((c) => c['estado_reproductivo'] == 'Gestante')
+              .toList();
+          if (gestantes.isEmpty) {
+            return const Center(child: Text('No hay cerdas preñadas'));
+          }
+
+          final porRaza = <String, List<Map<String, dynamic>>>{};
+          for (final c in gestantes) {
+            porRaza.putIfAbsent('${c['raza']}', () => []).add(c);
+          }
+
+          return ListView(
+            children: porRaza.entries.map((e) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 14),
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Raza: ${e.key}',
+                          style: const TextStyle(
+                            color: _rosa,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        CircleAvatar(
+                          radius: 16,
+                          backgroundColor: _rosa,
+                          child: Text(
+                            '${e.value.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    ...e.value.map(
+                      (c) => _fila([
+                        'Arete: ${c['numero_arete']}',
+                        'ID: ${c['numero']}',
+                        'Color: ${c['color']}',
+                        'Edad: ${c['edad_anios']}',
+                        'Estado: ${c['estado_reproductivo']}',
+                      ]),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }
@@ -566,16 +884,18 @@ class _ScreenInicioState extends State<ScreenInicio> {
   }
 }
 
-// ====== Tarjeta de contador ======
+// ====== Tarjeta de contador (ahora con "Ver detalle") ======
 class _TarjetaContador extends StatelessWidget {
   final String titulo;
   final int valor;
   final Color color;
+  final VoidCallback onTap;
 
   const _TarjetaContador({
     required this.titulo,
     required this.valor,
     required this.color,
+    required this.onTap,
   });
 
   @override
@@ -585,45 +905,58 @@ class _TarjetaContador extends StatelessWidget {
       color: Colors.white,
       surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
-        child: Column(
-          children: [
-            SizedBox(
-              height: 32,
-              child: Center(
-                child: Text(
-                  titulo,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 12),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 32,
+                child: Center(
+                  child: Text(
+                    titulo,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  FaIcon(FontAwesomeIcons.piggyBank, size: 22, color: color),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$valor',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: color,
+              const SizedBox(height: 8),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    FaIcon(FontAwesomeIcons.piggyBank, size: 22, color: color),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$valor',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 6),
+              const Text(
+                'Ver detalle',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF3B5B8C),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

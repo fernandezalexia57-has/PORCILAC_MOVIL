@@ -72,18 +72,25 @@ class _ScreenResetPasswordState extends State<ScreenResetPassword> {
                 style: const TextStyle(fontSize: 13.5, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'ejemplo@gmail.com',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
                     borderSide: BorderSide(color: Colors.grey.shade400),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
-                    borderSide:
-                        const BorderSide(color: porcilacPinkButton, width: 1.4),
+                    borderSide: const BorderSide(
+                      color: porcilacPinkButton,
+                      width: 1.4,
+                    ),
                   ),
                 ),
               ),
@@ -106,10 +113,15 @@ class _ScreenResetPasswordState extends State<ScreenResetPassword> {
                 style: const TextStyle(fontSize: 13.5, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: '••••••••••••••••',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarNuevaPass
@@ -128,8 +140,10 @@ class _ScreenResetPasswordState extends State<ScreenResetPassword> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
-                    borderSide:
-                        const BorderSide(color: porcilacPinkButton, width: 1.4),
+                    borderSide: const BorderSide(
+                      color: porcilacPinkButton,
+                      width: 1.4,
+                    ),
                   ),
                 ),
               ),
@@ -152,10 +166,15 @@ class _ScreenResetPasswordState extends State<ScreenResetPassword> {
                 style: const TextStyle(fontSize: 13.5, color: Colors.black87),
                 decoration: InputDecoration(
                   hintText: '••••••••••••••••',
-                  hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                  hintStyle: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 10,
+                  ),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _ocultarConfirmarPass
@@ -176,8 +195,10 @@ class _ScreenResetPasswordState extends State<ScreenResetPassword> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(2),
-                    borderSide:
-                        const BorderSide(color: porcilacPinkButton, width: 1.4),
+                    borderSide: const BorderSide(
+                      color: porcilacPinkButton,
+                      width: 1.4,
+                    ),
                   ),
                 ),
               ),

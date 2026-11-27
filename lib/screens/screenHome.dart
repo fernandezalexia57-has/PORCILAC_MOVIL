@@ -4,7 +4,10 @@ import 'package:sidebarx/sidebarx.dart';
 import 'package:porcilac/screens/screenCerdas.dart';
 import 'package:porcilac/screens/screenInicio.dart';
 import 'package:porcilac/screens/screenLogin.dart';
+import 'package:porcilac/screens/screenPartos.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'campanaNotificaciones.dart';
 
 const sidebarPinkColor = Color(0xFFF47FA1);
 const sidebarPinkHoverColor = Color(0xFFEA6B90);
@@ -14,16 +17,16 @@ const creamHeaderColor = Color(0xFFF8F2DD);
 Future<void> _cerrarSesion(BuildContext context) async {
   final confirmar = await showDialog<bool>(
     context: context,
-    builder: (_) => AlertDialog(
+    builder: (dialogContext) => AlertDialog(
       title: const Text('Cerrar sesión'),
       content: const Text('¿Desea cerrar sesión?'),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: () => Navigator.pop(dialogContext, false),
           child: const Text('No'),
         ),
         TextButton(
-          onPressed: () => Navigator.pop(context, true),
+          onPressed: () => Navigator.pop(dialogContext, true),
           child: const Text(
             'Sí',
             style: TextStyle(color: sidebarPinkHoverColor),
@@ -125,8 +128,8 @@ class _ScreenHomeState extends State<ScreenHome> {
                 child: _buildLogoWidget(height: 32),
               ),
               actions: const [
-                Icon(Icons.notifications, size: 20),
-                SizedBox(width: 12),
+                CampanaNotificaciones(),
+                SizedBox(width: 8),
                 Icon(Icons.person, size: 20),
                 SizedBox(width: 4),
                 Padding(
@@ -163,12 +166,8 @@ class _ScreenHomeState extends State<ScreenHome> {
                         _buildLogoWidget(height: 38),
                         const Row(
                           children: [
-                            Icon(
-                              Icons.notifications,
-                              size: 20,
-                              color: Colors.black87,
-                            ),
-                            SizedBox(width: 16),
+                            CampanaNotificaciones(),
+                            SizedBox(width: 12),
                             Icon(Icons.person, size: 20, color: Colors.black87),
                             SizedBox(width: 6),
                             Text(
@@ -252,7 +251,7 @@ class ExampleSidebarX extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.12),
+                  color: Colors.black.withValues(alpha: 0.12),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -445,7 +444,7 @@ class _ScreensExampleState extends State<_ScreensExample> {
     return AnimatedBuilder(
       animation: widget.controller,
       builder: (context, child) {
-        // NUEVO: pantalla de Inicio
+        // Pantalla de Inicio
         if (widget.controller.selectedIndex == 0) {
           return const ScreenInicio();
         }
@@ -454,9 +453,14 @@ class _ScreensExampleState extends State<_ScreensExample> {
           return _buildVistaEmpleados();
         }
 
-        // NUEVO: muestra la pantalla de Cerdas
+        // Pantalla de Cerdas
         if (widget.controller.selectedIndex == 2) {
           return const ScreenCerdas();
+        }
+
+        // NUEVO: Pantalla de Partos
+        if (widget.controller.selectedIndex == 4) {
+          return const ScreenPartos();
         }
 
         final pageTitle = _getTitleByIndex(widget.controller.selectedIndex);
